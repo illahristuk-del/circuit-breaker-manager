@@ -36,3 +36,4 @@ async def get_prometheus_metrics(db: DB_DEPENDS):
     )
 
     return Response(content=prometheus_data, media_type="text/plain")
+

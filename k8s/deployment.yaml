@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resilience-platform-deployment
+  namespace: resilience-platform
+  labels:
+    app: resilience-app 
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: resilience-pod
+  template:
+    metadata:
+      labels:
+        app: resilience-pod
+    spec:
+      containers:
+      - name: fastapi-container
+        image: illia/microservice-resilience-platform:latest 
+        ports:
+        - containerPort: 8000 
+        envFrom:
+        - configMapRef:
+            name: platform-config
+        env:
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: platform-secret
+              key: DB_PASSWORD
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi" 
+          requests:
+            cpu: "250m"
+            memory: "256Mi"

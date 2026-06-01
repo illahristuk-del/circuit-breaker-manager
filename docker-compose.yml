@@ -1,0 +1,148 @@
+networks:
+  platform_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  grafana_data:
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: resilience_postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/data/pgdata
+      - ./migrations:/migrations
+    environment:
+      POSTGRES_USER: platform_user
+      POSTGRES_PASSWORD: platform_password
+      POSTGRES_DB: resilience_db
+      PGDATA: /var/data/pgdata
+    networks:
+      - platform_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U platform_user -d resilience_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: resilience_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - platform_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  db_migrations:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: resilience_migrations
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://platform_user:platform_password@postgres:5432/resilience_db"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - platform_network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: resilience_fastapi
+    restart: always
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /home/appuser/.cache
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://platform_user:platform_password@postgres:5432/resilience_db"
+      REDIS_URL: "redis://redis:6379/0"
+      PORT: 8000
+      PYTHONDONTWRITEBYTECODE: 1
+      PYTHONPATH: "/app"  
+      PATH: "/home/appuser/.local/bin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      db_migrations:
+        condition: service_completed_successfully 
+    networks:
+      - platform_network
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: resilience_celery_worker
+    user: "appuser"  
+    command: ["python", "-m", "celery", "-A", "app.core.celery_app", "worker", "--loglevel=info"]   
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /run
+      - /home/appuser/.cache
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://platform_user:platform_password@postgres:5432/resilience_db"
+      REDIS_URL: "redis://redis:6379/0"
+      PYTHONPATH: "/app"
+      PATH: "/home/appuser/.local/bin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      db_migrations:
+        condition: service_completed_successfully
+    networks:
+      - platform_network
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: resilience_jaeger
+    ports:
+      - "16686:16686"
+      - "4317:4317" 
+    networks:
+      - platform_network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: resilience_prometheus
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - app
+    networks:
+      - platform_network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: resilience_grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - platform_network
