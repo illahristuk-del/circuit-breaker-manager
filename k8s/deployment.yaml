@@ -15,9 +15,18 @@ spec:
       labels:
         app: resilience-pod
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
       containers:
       - name: fastapi-container
-        image: illia/microservice-resilience-platform:latest 
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+          readOnlyRootFilesystem: true
+        image: ghcr.io/illahristuk-del/circuit-breaker-manager:latest 
         ports:
         - containerPort: 8000 
         envFrom:
