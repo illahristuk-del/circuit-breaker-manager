@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     METRICS_PORT: int = 8000
     REDIS_URL: str = "redis://localhost:6379/0"
 
-    DATABASE_URL: str
+    DATABASE_URL: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"

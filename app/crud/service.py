@@ -1,3 +1,5 @@
+from typing import List
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -21,7 +23,7 @@ async def get_service_by_db(db: AsyncSession, service_id: int) -> Service | None
     return result.scalar_one_or_none()
 
 
-async def get_all_services_by_db(db: AsyncSession) -> list[Service]:
+async def get_all_services_by_db(db: AsyncSession) -> List[Service]:
     result = await db.execute(select(Service))
     return list[result.scalars().all()]
 
@@ -33,7 +35,7 @@ async def create_health_log(
     status_code: int | None,
     response_time: float,
     error_message: str | None = None,
-) -> HealthCheckLog:
+) -> HealthCheckLog | None:
 
     get_service = await db.execute(select(Service).where(Service.id == service_id))
     service = get_service.scalar_one_or_none()
@@ -60,7 +62,7 @@ async def create_cb_state_log(
     from_state: TaskStatus,
     to_state: TaskStatus,
     reason: str,
-) -> CircuitBreakerStateLog:
+) -> CircuitBreakerStateLog | None:
 
     get_service = await db.execute(select(Service).where(Service.id == service_id))
     service = get_service.scalar_one_or_none()
