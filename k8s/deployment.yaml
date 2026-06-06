@@ -3,8 +3,6 @@ kind: Deployment
 metadata:
   name: resilience-platform-deployment
   namespace: resilience-platform
-  labels:
-    app: resilience-app 
 spec:
   replicas: 2
   selector:
@@ -15,33 +13,48 @@ spec:
       labels:
         app: resilience-pod
     spec:
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1000
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: platform-secret
       containers:
       - name: fastapi-container
+        image: ghcr.io/illahristuk-del/circuit-breaker-manager@sha256:bdc9c9cf948136a685cc9a16abe6c409e55c41eb6ab5604066f1819fabc37f4d
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
             drop:
-              - NET_RAW
+              - ALL
           readOnlyRootFilesystem: true
-        image: ghcr.io/illahristuk-del/circuit-breaker-manager:latest 
+        volumeMounts:
+        - name: secret-volume
+          mountPath: /etc/secrets
+          readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
         ports:
-        - containerPort: 8000 
+        - containerPort: 8000
         envFrom:
         - configMapRef:
             name: platform-config
-        env:
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: platform-secret
-              key: DB_PASSWORD
         resources:
           limits:
             cpu: "500m"
-            memory: "512Mi" 
+            memory: "512Mi"
           requests:
             cpu: "250m"
             memory: "256Mi"
