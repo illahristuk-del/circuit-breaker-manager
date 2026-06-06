@@ -45,7 +45,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: fastapi_db
+          POSTGRES_DB: ci_cd_database
         ports:
           - 5432:5432
         options: >-
@@ -75,6 +75,8 @@ jobs:
           version: "v0.20.0"
       
       - name: Verify Cluster & Run Tests with Coverage (>85%)
+        env:
+          DATABASE_URL: ${{ settings.CICD_DATABASE_URL }}
         run: |
           kubectl cluster-info         
           pytest --cov=. --cov-report=term-missing --cov-fail-under=85 tests/
