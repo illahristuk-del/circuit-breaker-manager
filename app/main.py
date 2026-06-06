@@ -5,7 +5,7 @@ from app.routers.websocket import router as ws_router
 
 app = FastAPI(
     title="FinTech Circuit Breaker Manager",
-    description="Критично важливий мікросервіс моніторингу зовнішніх API платіжних систем",
+    description="Critical microservice for monitoring external payment system APIs",
     version="1.0.0"
 )
 
