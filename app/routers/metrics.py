@@ -33,7 +33,8 @@ async def get_prometheus_metrics(db: DB_DEPENDS):
         f"# TYPE health_checks_total counter\n"
         f'health_checks_total{{status="success"}} {success_count}\n'
         f'health_checks_total{{status="failure"}} {failure_count}\n\n'
-        f"# HELP health_check_avg_response_time_seconds Average response time of external services.\n"
+        f"# HELP health_check_avg_response_time_seconds "
+        "Average response time of external services.\n"
         f"# TYPE health_check_avg_response_time_seconds gauge\n"
         f"health_check_avg_response_time_seconds {avg_response_time:.4f}\n"
     )

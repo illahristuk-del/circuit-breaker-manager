@@ -28,7 +28,7 @@ jobs:
         run: black --check .
 
       - name: Run Flake8 (Syntax Style)
-        run: flake8 --max-line-length=88 --exclude=.venv,lin-venv,.git
+        run: flake8 --max-line-length=88 --exclude=.venv,lin-venv,.git,migrations
 
       - name: Run Mypy (Strict Type Checking)
         run: mypy --ignore-missing-imports .

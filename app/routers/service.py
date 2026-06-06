@@ -9,7 +9,6 @@ from app.models.service import TaskStatus
 from app.schemas.service import (
     CreateService,
     ResponseCBStateResponse,
-    ResponseHealthCheckLog,
     ResponseService,
 )
 
