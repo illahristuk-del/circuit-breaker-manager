@@ -1,8 +1,9 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, Response
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import func
-from typing import Annotated
 
 from app.database import get_db
 from app.models.health_log import HealthCheckLog
@@ -11,14 +12,16 @@ router = APIRouter(tags=["Metrics"])
 
 DB_DEPENDS = Annotated[AsyncSession, Depends(get_db)]
 
+
 @router.get("/metrics")
 async def get_prometheus_metrics(db: DB_DEPENDS):
     query_counts = await db.execute(
-        select(HealthCheckLog.is_alive, func.count(HealthCheckLog.id))
-        .group_by(HealthCheckLog.is_alive)
+        select(HealthCheckLog.is_alive, func.count(HealthCheckLog.id)).group_by(
+            HealthCheckLog.is_alive
+        )
     )
     counts = dict(query_counts.all())
-    
+
     success_count = counts.get(True, 0)
     failure_count = counts.get(False, 0)
 
@@ -36,4 +39,3 @@ async def get_prometheus_metrics(db: DB_DEPENDS):
     )
 
     return Response(content=prometheus_data, media_type="text/plain")
-

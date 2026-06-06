@@ -1,14 +1,19 @@
 import time
-import pytest
-from httpx import AsyncClient
-from fastapi import status
 from unittest.mock import patch
+
+import pytest
+from fastapi import status
+from httpx import AsyncClient
+
 
 @pytest.mark.asyncio
 async def test_root_endpoint(ac: AsyncClient):
     response = await ac.get("/")
     assert response.status_code == 200
-    assert response.json() == {"status": "operational", "service": "circuit-breaker-manager"}
+    assert response.json() == {
+        "status": "operational",
+        "service": "circuit-breaker-manager",
+    }
 
 
 @pytest.mark.asyncio
@@ -18,12 +23,15 @@ async def test_register_service(ac: AsyncClient):
     payload = {
         "name": f"auth_service_{unique_suffix}",
         "url": "http://localhost:9000/health",
-        "ping_interval": 5
+        "ping_interval": 5,
     }
 
     response = await ac.post("/services/register-service", json=payload)
 
-    assert response.status_code in [200, 201], f"Бекенд повернув 400. Опис помилки: {response.text}"
+    assert response.status_code in [
+        200,
+        201,
+    ], f"Бекенд повернув 400. Опис помилки: {response.text}"
 
     data = response.json()
 
@@ -36,12 +44,15 @@ async def test_register_service_exception(ac: AsyncClient):
     payload = {
         "name": "faulty_service",
         "url": "http://localhost/health",
-        "ping_interval": 1
+        "ping_interval": 1,
     }
-    
-    with patch("app.crud.service.create_service", side_effect=Exception("Database crash simulator")):
+
+    with patch(
+        "app.crud.service.create_service",
+        side_effect=Exception("Database crash simulator"),
+    ):
         response = await ac.post("/services/register-service", json=payload)
-        
+
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "cant register new service" in response.json()["detail"]
 
@@ -52,13 +63,16 @@ async def test_get_health_microservice(ac: AsyncClient):
     payload = {
         "name": f"health_check_service_{unique_suffix}",
         "url": "http://localhost:9001/health",
-        "ping_interval": 5
+        "ping_interval": 5,
     }
     reg_response = await ac.post("/services/register-service", json=payload)
     service_id = reg_response.json()["id"]
 
     response = await ac.get(f"/services/health/{service_id}")
-    assert response.status_code in [200, 201], f"Бекенд повернув 400. Опис помилки: {response.text}"
+    assert response.status_code in [
+        200,
+        201,
+    ], f"Бекенд повернув 400. Опис помилки: {response.text}"
     assert response.json()["id"] == service_id
 
 
@@ -90,7 +104,7 @@ async def test_get_metrics(ac: AsyncClient):
 
     assert 'health_checks_total{status="success"} 0' in response.text
     assert 'health_checks_total{status="failure"} 0' in response.text
-    assert 'health_check_avg_response_time_seconds 0.0000' in response.text 
+    assert "health_check_avg_response_time_seconds 0.0000" in response.text
 
     assert "# HELP health_checks_total" in response.text
     assert "# TYPE health_checks_total counter" in response.text
@@ -111,7 +125,7 @@ async def test_manual_trip_service_success(ac: AsyncClient):
     payload = {
         "name": f"trip_service_{unique_suffix}",
         "url": "http://localhost:9002/health",
-        "ping_interval": 5
+        "ping_interval": 5,
     }
 
     reg_response = await ac.post("/services/register-service", json=payload)

@@ -2,6 +2,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 router = APIRouter(tags=["WebSockets"])
 
+
 class ConnectionManager:
     def __init__(self) -> None:
         self.active_connections: list[WebSocket] = []
@@ -20,7 +21,9 @@ class ConnectionManager:
             except Exception:
                 pass
 
+
 manager = ConnectionManager()
+
 
 @router.websocket("/ws/status")
 async def websocket_endpoint(websocket: WebSocket):

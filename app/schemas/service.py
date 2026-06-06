@@ -1,20 +1,26 @@
-from pydantic import BaseModel, Field, HttpUrl
-from typing import Annotated
 from datetime import datetime
+from typing import Annotated
+
+from pydantic import BaseModel, Field, HttpUrl
+
 from app.models.service import TaskStatus
+
 
 class ServiceBase(BaseModel):
     name: Annotated[str, Field(max_length=225)]
     url: HttpUrl
 
+
 class CreateService(ServiceBase):
     pass
+
 
 class ResponseService(ServiceBase):
     id: int
     status: TaskStatus
 
     model_config = {"from_attributes": True}
+
 
 class ResponseHealthCheckLog(BaseModel):
     id: int
@@ -26,6 +32,7 @@ class ResponseHealthCheckLog(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
 
 class ResponseCBStateResponse(BaseModel):
     id: int
