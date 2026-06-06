@@ -6,8 +6,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.crud import service as service_crud
 from app.database import get_db
 from app.models.service import TaskStatus
-from app.schemas.service import (CreateService, ResponseCBStateResponse,
-                                 ResponseHealthCheckLog, ResponseService)
+from app.schemas.service import (
+    CreateService,
+    ResponseCBStateResponse,
+    ResponseHealthCheckLog,
+    ResponseService,
+)
 
 router = APIRouter(prefix="/services", tags=["Services"])
 
