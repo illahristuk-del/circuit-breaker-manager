@@ -84,6 +84,10 @@ jobs:
   build-and-publish:
     needs: testing
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
     outputs:
       sha_tag: ${{ steps.vars.outputs.sha_short }}
     steps:
