@@ -2,16 +2,16 @@ import asyncio
 
 import pytest
 from fastapi.testclient import TestClient
-from httpx import ASGITransport, AsyncClient #noqa: f401
+from httpx import ASGITransport, AsyncClient  # noqa: f401
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.database import Base
 from app.main import app
 
-#TEST_DATABASE_URL = (
+# TEST_DATABASE_URL = (
 #    "postgresql+asyncpg://postgres:postgres@localhost:5432/resilience_test_db"
-#)
+# )
 
 TEST_DATABASE_URL = (
     "postgresql+asyncpg://postgres:postgres@localhost:5432/ci_cd_database"
