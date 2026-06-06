@@ -1,0 +1,16 @@
+name: "My first robot"
+
+on:
+  push:
+    branches: [ main ]
+
+jobs: 
+  hello-world-job:
+    runs-on: ubuntu_latest
+
+    steps:
+      - name: First step - say hi
+        run: echo "Hello! GitHub Actions working!"
+
+      - name: Second step - check Python version
+        run: python3 --version
