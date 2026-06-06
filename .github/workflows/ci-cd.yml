@@ -76,7 +76,7 @@ jobs:
       
       - name: Verify Cluster & Run Tests with Coverage (>85%)
         env:
-          DATABASE_URL: ${{ settings.CICD_DATABASE_URL }}
+          DATABASE_URL: "postgresql+asyncpg://postgres:postgres@localhost:5432/ci_cd_database"
         run: |
           kubectl cluster-info         
           pytest --cov=. --cov-report=term-missing --cov-fail-under=85 tests/
