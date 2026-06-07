@@ -167,7 +167,7 @@ jobs:
           chmod 600 ~/.kube/config
 
       - name: Deploy to Staging Namespace & Rollout Smoke Test
-        if: secrets.KUBERNETES_KUBECONFIG != ''
+        if: ${{ secrets.KUBERNETES_KUBECONFIG != '' }}
         run: |
           kubectl apply -f k8s/ -n resilience-platform
           kubectl set image deployment/resilience-platform-deployment fastapi-container=ghcr.io/${{ github.repository }}:${{ needs.build-and-publish.outputs.sha_tag }} -n resilience-platform
