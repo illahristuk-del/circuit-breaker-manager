@@ -4,50 +4,52 @@ metadata:
   name: resilience-platform-deployment
   namespace: resilience-platform
   labels:
-    app: resilience-app 
+    app: resilience-platform 
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: resilience-pod
+      app: resilience-platform 
   template:
     metadata:
       labels:
-        app: resilience-pod
+        app: resilience-platform
     spec:
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1000
+        runAsUser: 10001
+        runAsGroup: 30001
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: fastapi-container
+        image: ghcr.io/illahristuk-del/circuit-breaker-manager@sha256:a5ae5daf2231c52794cf68308f5cda0e78ac71426aa71530dabb6bdc0efaf39c
+        imagePullPolicy: Always
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
-            drop:
-              - NET_RAW
+            drop: ["ALL"]
           readOnlyRootFilesystem: true
-        image: ghcr.io/illahristuk-del/circuit-breaker-manager:latest 
-        imagePullPolicy: Always
+        volumeMounts:
+        - name: secret-volume
+          mountPath: "/etc/secrets"
+          readOnly: true
         ports:
-        - containerPort: 8000 
+        - containerPort: 8000
         envFrom:
         - configMapRef:
             name: platform-config
-        env:
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: platform-secret
-              key: DB_PASSWORD
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: platform-secret
-              key: DATABASE_URL
+        livenessProbe:
+          httpGet: {path: /, port: 8000}
+          initialDelaySeconds: 15
+        readinessProbe:
+          httpGet: {path: /, port: 8000}
+          initialDelaySeconds: 5
         resources:
-          limits:
-            cpu: "500m"
-            memory: "512Mi" 
-          requests:
-            cpu: "250m"
-            memory: "256Mi"
+          limits: {cpu: "500m", memory: "512Mi"}
+          requests: {cpu: "250m", memory: "256Mi"}
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: platform-secret

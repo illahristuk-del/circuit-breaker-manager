@@ -6,14 +6,14 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: resilience-pod 
+      app: resilience-platform 
   policyTypes:
   - Ingress
   ingress:
   - from:
     - podSelector:
         matchLabels:
-          app: resilience-pod 
+          app: resilience-platform
     ports:
     - protocol: TCP
       port: 8000
