@@ -1,26 +1,27 @@
-Circuit Breaker Manager: FinTech Resilience Platform
+# Circuit Breaker Manager: Microservice Resilience Platform
 
-Circuit Breaker Manager is a high-availability, microservice-based platform engineered to ensure the resilience of distributed FinTech ecosystems. By implementing the Circuit Breaker pattern, the system monitors external API health, mitigates cascading failures, and orchestrates automated state transitions to maintain service continuity.
-System Architecture and Core Components
+`Circuit Breaker Manager` is an end-to-end resilient microservice platform designed for automated health monitoring of external API dependencies, dynamic circuit state management, and real-time observability in distributed FinTech environments. The architecture integrates asynchronous event-driven patterns, Redis-based state caching, and Kubernetes-native orchestration for high-availability deployments.
 
-The pipeline is engineered as a sequence of isolated, reproducible stages, replicating industry-standard FinTech data workflows:
+## System Architecture and Core Components
 
-    Resilience Engine: Asynchronous state machine (CLOSED, OPEN, HALF_OPEN) utilizing asyncio and Redis-backed caching to manage external dependency lifecycle.
+The pipeline is engineered as a sequence of isolated, reproducible stages replicating industry-standard FinTech workflows:
 
-    Telemetry & Observability: Integrated Prometheus metrics for latency/error rate tracking, coupled with OpenTelemetry and Jaeger for distributed request tracing.
+1. **Async Monitoring & ETL Pipeline:** Automated asynchronous health checks (via `asyncio`) for external banking and payment provider APIs, with structural validation and event-driven logging of service status.
+2. **Circuit Breaker Engine:**
+    * **State Management:** A robust state machine implementation tracking transitions between **CLOSED**, **OPEN**, and **HALF_OPEN** modes to prevent cascading system failures.
+    * **Failure Threshold Logic:** Automated threshold tracking for rapid response to external dependency outages or latency degradation.
+3. **Hybrid Observability & Task Engine:**
+    * **Event Processing:** Distributed task management via RabbitMQ and Celery for decoupled background processing of health events and configuration updates.
+    * **Telemetry Pipeline:** Real-time metrics collection via Prometheus and distributed tracing for auditing and performance analysis.
+4. **Generative & Reactive Integration:** WebSocket-based real-time status broadcasting to downstream systems and secure integration with Postgres for persistent configuration storage.
 
-    Infrastructure Orchestration: Kubernetes-native deployment architecture featuring HPA (Horizontal Pod Autoscaler), strict NetworkPolicies, and PodDisruptionBudgets.
+---
 
-    Asynchronous Processing: Distributed task management via RabbitMQ/Celery to ensure non-blocking event handling and background health check execution.
+## Technical Stack
 
-    Hardened Security Pipeline: Multi-stage Docker optimization (<150MB, non-root user, read-only FS) and comprehensive CI/CD security gating (Cosign image signing, SAST/SCA analysis).
-
-Technical Stack
-
-    Core Language: Python 3.12+ (FastAPI)
-
-    Databases & Queues: PostgreSQL, Redis
-
-    Orchestration: Kubernetes, Docker Compose
-
-    CI/CD: GitHub Actions (Linting, Security, Coverage, Deployment)
+- **Core Language:** Python 3.12
+- **Infrastructure & Orchestration:** Kubernetes (K8s), Docker, Docker Compose
+- **Data & Caching:** PostgreSQL, Redis
+- **Message Broker:** Celery
+- **Observability:** Prometheus, Grafana, Jaeger
+- **Framework:** FastAPI
