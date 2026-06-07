@@ -24,7 +24,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: fastapi-container
-        image: ghcr.io/illahristuk-del/circuit-breaker-manager:latest
+        image: ghcr.io/illahristuk-del/circuit-breaker-manager:__VERSION__
         imagePullPolicy: Always
         securityContext:
           allowPrivilegeEscalation: false
