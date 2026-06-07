@@ -1,19 +1,19 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-fastapi-traffic
+  name: resilience-policy
   namespace: resilience-platform
 spec:
   podSelector:
     matchLabels:
-      app: resilience-pod
+      app: resilience-pod 
   policyTypes:
   - Ingress
   ingress:
   - from:
     - podSelector:
         matchLabels:
-          app: ingress-controller 
+          app: resilience-pod 
     ports:
     - protocol: TCP
       port: 8000
