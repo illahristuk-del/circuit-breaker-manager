@@ -57,4 +57,3 @@ async def ac():
 def ws_client():
     with TestClient(app) as client:
         yield client
- 
