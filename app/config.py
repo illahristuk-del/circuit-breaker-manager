@@ -1,5 +1,6 @@
 import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field
 from typing import Optional
 
 
@@ -18,7 +19,7 @@ class Settings(BaseSettings):
     METRICS_PORT: int = 8000
     REDIS_URL: str = "redis://localhost:6379/0"
 
-    DATABASE_URL: Optional[str] = None
+    DATABASE_URL: Optional[str] = Field(default=None)
     CICD_DATABASE_URL: str = (
         "postgresql+asyncpg://postgres:postgres@localhost:5432/ci_cd_database"
     )
@@ -29,10 +30,11 @@ class Settings(BaseSettings):
 
     def __init__(self, **values):
         super().__init__(**values)
+        val = read_secret_file("DATABASE_URL") or os.getenv("DATABASE_URL")
+        if val:
+            self.DATABASE_URL = val
         if not self.DATABASE_URL:
-            self.DATABASE_URL = read_secret_file("DATABASE_URL") or os.getenv(
-                "DATABASE_URL", ""
-            )
+            raise ValueError("CRITICAL: DATABASE_URL is not configured!")
 
 
 settings = Settings()
